@@ -59,8 +59,11 @@ end
 -- Sort preferred languages in order of preference
 local cleaned = ngx.re.sub(lang_header, "^.*:", ""):lower() -- Remove header name "Accept-Language:"
 local options = {} -- Sorted table: { en-US: 1, en: 0.8, de-DE: 0.6, de: 0.4 }
+
 -- Create 2 match groups: language and priority
-local iterator, err = ngx.re.gmatch(cleaned, "\\s*([a-z]+(?:-[a-z])*)\\s*(?:;q=([0-9]+(.[0-9]*)?))?\\s*(,|$)", "i")
+local regex = "\\s*([a-z-]*)\\s*(?:;q=([0-9]+(.[0-9]*)?))?\\s*(,|$)"
+local iterator, err = ngx.re.gmatch(cleaned, regex, "i") -- i = pcre option flag - caseless match
+-- have to learn why "iterator, err in" - and then "m, err in" - "m[1], m[2]"
 for m, err in iterator do
   local lang = m[1]  -- "en-US" or "en"
   local priority = 1 -- value between 1 and 0 with default 1
@@ -74,11 +77,15 @@ table.sort(options, function(a,b) return b[2] < a[2] end)
 
 -- Match the best language we got
 for index, lang in pairs(options) do
-  if langs[lang[1]] then
-    return lang[1]
+  for value, langavail in pairs(langs) do
+    if langavail:lower() == lang[1] then -- :lower() on langs - can you improve this?
+      return lang[1]
+    end
   end
-  if lang_defaults[lang[1]] then
-    return lang_defaults[lang[1]]
+  for value, langdef in pairs(lang_defaults) do
+    if value == lang[1] then
+      return langdef
+    end
   end
 end
 
