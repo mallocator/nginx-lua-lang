@@ -18,16 +18,19 @@ server {
  index index.html index.htm;
  server_name localhost;
 
- set $lsup "en_US,en_UK,en_AU,pt_PT,pt_BR";
- set $ldef "en:en_US,pt:pt_BR";
- set $lfallback "en_US";
+ set $lsup "en-US,en-UK,en-AU,pt-PT,pt-BR";
+ set $ldef "en:en-US,pt:pt-BR";
+ set $lfallback "en-US";
  set $lparam "lang";
  set_by_lua_file $lang /etc/nginx/lang.lua $lsup $ldef $lfallback $lparam;
 
- root /var/www/$lang;
+ root /var/www/;
 
  location = / {
-   try_files $uri $uri/ =404;
+  try_files $uri $uri/ =404;
+   if ($lang ~ 'pt' ) {
+      rewrite (.*) $scheme://$server_name/pt$1;
+  }
  }
 }
 ```
@@ -73,9 +76,9 @@ server {
  index index.html index.htm;
  server_name localhost;
 
- set $lsup "en_US,en_UK,en_AU,pt_PT,pt_BR";
- set $ldef "en:en_US,pt:pt_BR";
- set $lfallback "en_US";
+ set $lsup "en-US,en-UK,en-AU,pt-PT,pt-BR";
+ set $ldef "en:en-US,pt:pt-BR";
+ set $lfallback "en-US";
  set $lparam "lang";
  set_by_lua_file $lang /etc/nginx/lang.lua $lsup $ldef $lfallback $lparam;
 
