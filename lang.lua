@@ -71,7 +71,10 @@ for m, err in iterator do
     priority = tonumber(m[2])
     if priority == nil then priority = 1 end
   end
-  table.insert(options, {lang, priority})
+  if m[1] == "" then
+  else 
+    table.insert(options, {lang, priority})
+  end
 end
 table.sort(options, function(a,b) return b[2] < a[2] end)
 
