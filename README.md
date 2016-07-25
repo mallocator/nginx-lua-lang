@@ -18,16 +18,19 @@ server {
  index index.html index.htm;
  server_name localhost;
 
- set $lsup = "en_US,en_UK,en_AU,pt_PT,pt_BR";
- set $ldef = "en:en_US,pt:pt_BR";
- set $lfallback = "en_US";
- set $lparam = "lang";
+ set $lsup "en-US,en-UK,en-AU,pt-PT,pt-BR";
+ set $ldef "en:en-US,pt:pt-BR";
+ set $lfallback "en-US";
+ set $lparam "lang";
  set_by_lua_file $lang /etc/nginx/lang.lua $lsup $ldef $lfallback $lparam;
 
- root /var/www/$lang;
+ root /var/www/;
 
  location = / {
-   try_files $uri $uri/ =404;
+  try_files $uri $uri/ =404;
+   if ($lang ~ 'pt' ) {
+      rewrite (.*) $scheme://$server_name/pt$1;
+  }
  }
 }
 ```
@@ -73,22 +76,24 @@ server {
  index index.html index.htm;
  server_name localhost;
 
- set $lsup = "en_US,en_UK,en_AU,pt_PT,pt_BR";
- set $ldef = "en:en_US,pt:pt_BR";
- set $lfallback = "en_US";
- set $lparam = "lang";
+ set $lsup "en-US,en-UK,en-AU,pt-PT,pt-BR";
+ set $ldef "en:en-US,pt:pt-BR";
+ set $lfallback "en-US";
+ set $lparam "lang";
  set_by_lua_file $lang /etc/nginx/lang.lua $lsup $ldef $lfallback $lparam;
 
  root /var/www/;
 
  location = / {
+   add_header Content-Type text/plain;
    return 200 $lang;
  }
 }
 ```
 
-With this the response will only be the value of what $lang has been set to. Not the most elegant
-debugging option, but it works.
+With this the response will only be the value of what $lang has been set to. Not the most elegant debugging option, but it works. If you want to use a browser rather than curl, use "add_header Content-Type text/plain;".
+
+Alternatively, you can use "ngx.log(ngx.ALERT, "message: "..variable)" to debug with tailing into the nginx error logs, or test with a local lua script with 'rex = require "rex_pcre"' as ngx.re replacement.
 
 Finally you might want to send requests to nginx to test your settings. The easiest way (on nix)
 is to use curl. Here are some simple example for curl:
